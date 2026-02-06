@@ -1,12 +1,16 @@
 import { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Brain, BarChart3, Shield, Sparkles } from 'lucide-react';
+import { Brain, BarChart3, Shield, Sparkles, LogOut, Loader2 } from 'lucide-react';
 import { FileUpload } from '@/components/FileUpload';
 import { Dashboard } from '@/components/Dashboard';
 import { Customer, ChurnInsights } from '@/types/customer';
 import { generateMockCustomers, calculateInsights, parseCSV } from '@/utils/mockPredictions';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
 
 const Index = () => {
+  const { user, loading, signOut } = useAuth();
   const [customers, setCustomers] = useState<Customer[] | null>(null);
   const [insights, setInsights] = useState<ChurnInsights | null>(null);
 
@@ -29,6 +33,18 @@ const Index = () => {
     setInsights(null);
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
   if (customers && insights) {
     return (
       <Dashboard 
@@ -41,6 +57,14 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Header with Sign Out */}
+      <div className="absolute top-4 right-4 z-10">
+        <Button variant="ghost" size="sm" onClick={signOut} className="text-muted-foreground hover:text-foreground">
+          <LogOut className="w-4 h-4 mr-2" />
+          Sign Out
+        </Button>
+      </div>
+
       {/* Hero Section */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-16">
         <motion.div
