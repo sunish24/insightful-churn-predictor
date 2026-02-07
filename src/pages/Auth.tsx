@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Brain, Mail, Lock, Loader2 } from 'lucide-react';
+import { Brain, Mail, Lock, Loader2, Chrome } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { lovable } from '@/integrations/lovable/index';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,6 +21,7 @@ export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -182,6 +184,43 @@ export default function Auth() {
                 {isLogin ? 'Sign In' : 'Create Account'}
               </Button>
             </form>
+            
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              disabled={googleLoading || loading}
+              onClick={async () => {
+                setGoogleLoading(true);
+                const { error } = await lovable.auth.signInWithOAuth('google', {
+                  redirect_uri: window.location.origin,
+                });
+                if (error) {
+                  toast({
+                    title: "Error",
+                    description: error.message || "Failed to sign in with Google",
+                    variant: "destructive",
+                  });
+                  setGoogleLoading(false);
+                }
+              }}
+            >
+              {googleLoading ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Chrome className="w-4 h-4 mr-2" />
+              )}
+              Continue with Google
+            </Button>
             
             <div className="mt-6 text-center">
               <button
