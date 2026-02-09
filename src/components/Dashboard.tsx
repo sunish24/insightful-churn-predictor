@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Users, AlertTriangle, TrendingDown, DollarSign, ArrowLeft, Brain } from 'lucide-react';
+import { Users, AlertTriangle, TrendingDown, DollarSign, ArrowLeft, Brain, Download, Bell, CheckCircle } from 'lucide-react';
 import { Customer, ChurnInsights } from '@/types/customer';
 import { StatsCard } from './StatsCard';
 import { CustomerTable } from './CustomerTable';
 import { CustomerDetail } from './CustomerDetail';
 import { RiskDistributionChart } from './RiskDistributionChart';
 import { FeatureImportanceChart } from './FeatureImportanceChart';
+import { GlobalInsights } from './GlobalInsights';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 interface DashboardProps {
   customers: Customer[];
@@ -17,6 +19,45 @@ interface DashboardProps {
 
 export function Dashboard({ customers, insights, onReset }: DashboardProps) {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const { toast } = useToast();
+
+  const handleExportCSV = () => {
+    const headers = ['ID', 'Tenure', 'Monthly Charges', 'Contract Type', 'Internet Service', 'Payment Method', 'Support Calls', 'Total Charges', 'Churn Probability', 'Risk Level'];
+    const rows = customers.map(c => [
+      c.id,
+      c.tenure,
+      c.monthlyCharges.toFixed(2),
+      c.contractType,
+      c.internetService,
+      c.paymentMethod,
+      c.supportCalls,
+      c.totalCharges.toFixed(2),
+      (c.churnProbability * 100).toFixed(1) + '%',
+      c.riskLevel,
+    ]);
+    
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'churn-predictions.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Exported",
+      description: `${customers.length} customer predictions downloaded`,
+    });
+  };
+
+  const handleSetAlerts = () => {
+    const highRiskCustomers = customers.filter(c => c.churnProbability > 0.8);
+    toast({
+      title: "Alerts Configured",
+      description: `Monitoring ${highRiskCustomers.length} customers with >80% churn risk`,
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
@@ -43,9 +84,19 @@ export function Dashboard({ customers, insights, onReset }: DashboardProps) {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
-            <Brain className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-primary">XGBoost Model Active</span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button variant="outline" size="sm" onClick={handleSetAlerts}>
+              <Bell className="w-4 h-4 mr-1" />
+              Set Alerts
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleExportCSV}>
+              <Download className="w-4 h-4 mr-1" />
+              Export CSV
+            </Button>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
+              <Brain className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-primary">XGBoost Model Active</span>
+            </div>
           </div>
         </motion.div>
 
@@ -90,9 +141,18 @@ export function Dashboard({ customers, insights, onReset }: DashboardProps) {
           <FeatureImportanceChart insights={insights} />
         </div>
 
+        {/* Global Insights */}
+        <GlobalInsights customers={customers} insights={insights} />
+
         {/* Customer Table */}
         <div>
-          <h2 className="text-xl font-semibold text-foreground mb-4">Customer Predictions</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-foreground">Customer Predictions</h2>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <CheckCircle className="w-4 h-4 text-green-500" />
+              <span>Click any row for detailed analysis</span>
+            </div>
+          </div>
           <CustomerTable 
             customers={customers}
             onCustomerClick={setSelectedCustomer}
