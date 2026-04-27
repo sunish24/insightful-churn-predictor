@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, User, Calendar, CreditCard, Wifi, Phone, DollarSign, Download, Bell } from 'lucide-react';
+import { useState } from 'react';
+import { X, User, Calendar, CreditCard, Wifi, Phone, DollarSign, Download, Bell, Sparkles, Loader2 } from 'lucide-react';
 import { Customer } from '@/types/customer';
 import { ShapExplanation } from './ShapExplanation';
 import { WhatIfSimulator } from './WhatIfSimulator';
@@ -7,6 +8,7 @@ import { RetentionActions } from './RetentionActions';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { explainCustomer } from '@/utils/churnApi';
 
 interface CustomerDetailProps {
   customer: Customer | null;
@@ -15,8 +17,27 @@ interface CustomerDetailProps {
 
 export function CustomerDetail({ customer, onClose }: CustomerDetailProps) {
   const { toast } = useToast();
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiText, setAiText] = useState<string>("");
 
   if (!customer) return null;
+
+  const generateAiExplanation = async () => {
+    setAiLoading(true);
+    setAiText("");
+    try {
+      const text = await explainCustomer(customer);
+      setAiText(text);
+    } catch (e) {
+      toast({
+        title: "Could not generate AI explanation",
+        description: e instanceof Error ? e.message : "Unknown error",
+        variant: "destructive",
+      });
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const riskColors = {
     high: 'from-risk-high/20 to-risk-high/5 border-risk-high/30',
@@ -227,6 +248,36 @@ export function CustomerDetail({ customer, onClose }: CustomerDetailProps) {
 
               <TabsContent value="explainability">
                 <div className="space-y-6">
+                  {/* AI-generated natural language explanation */}
+                  <div className="p-4 rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 to-accent/5">
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-5 h-5 text-primary" />
+                        <h4 className="font-semibold text-foreground">AI-Generated Explanation</h4>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={generateAiExplanation}
+                        disabled={aiLoading}
+                      >
+                        {aiLoading ? (
+                          <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Thinking…</>
+                        ) : aiText ? "Regenerate" : "Generate"}
+                      </Button>
+                    </div>
+                    {aiText ? (
+                      <div className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+                        {aiText}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        Click <strong>Generate</strong> to get a plain-English explanation of why
+                        this customer is at risk and what actions to take next.
+                      </p>
+                    )}
+                  </div>
+
                   <div>
                     <h3 className="text-lg font-semibold text-foreground mb-4">Why This Prediction?</h3>
                     <ShapExplanation 
