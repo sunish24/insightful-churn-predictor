@@ -11,6 +11,13 @@ export interface RawCustomerInput {
   paymentMethod?: string;
   supportCalls?: number | string;
   totalCharges?: number | string;
+  // Optional behavioral signals (synthesized server-side if missing)
+  loginsM1?: number | string;
+  loginsM2?: number | string;
+  daysSinceLastAction?: number | string;
+  uniqueFeaturesUsed?: number | string;
+  totalSessions?: number | string;
+  supportTickets?: number | string;
 }
 
 /** Parse raw CSV into objects WITHOUT running the heuristic predictor. */
@@ -32,6 +39,12 @@ export function parseCSVRaw(csvText: string): RawCustomerInput[] {
       paymentMethod: row.paymentmethod || row.payment_method,
       supportCalls: row.supportcalls || row.support_calls,
       totalCharges: row.totalcharges || row.total_charges,
+      loginsM1: row.logins_m1 || row.loginsm1,
+      loginsM2: row.logins_m2 || row.loginsm2,
+      daysSinceLastAction: row.days_since_last_action || row.dayssincelastaction || row.last_action_days,
+      uniqueFeaturesUsed: row.unique_features_used || row.uniquefeaturesused,
+      totalSessions: row.total_sessions || row.totalsessions || row.sessions,
+      supportTickets: row.support_tickets || row.supporttickets || row.tickets,
     });
   }
   return rows;
