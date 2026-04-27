@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Users, AlertTriangle, TrendingDown, DollarSign, ArrowLeft, Brain, Download, Bell, CheckCircle } from 'lucide-react';
+import { Users, AlertTriangle, TrendingDown, DollarSign, ArrowLeft, Brain, Download, Bell, CheckCircle, Activity, LayoutDashboard } from 'lucide-react';
 import { Customer, ChurnInsights } from '@/types/customer';
 import { StatsCard } from './StatsCard';
 import { CustomerTable } from './CustomerTable';
@@ -8,6 +8,8 @@ import { CustomerDetail } from './CustomerDetail';
 import { RiskDistributionChart } from './RiskDistributionChart';
 import { FeatureImportanceChart } from './FeatureImportanceChart';
 import { GlobalInsights } from './GlobalInsights';
+import { SurvivalAnalysis } from './SurvivalAnalysis';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
@@ -100,64 +102,80 @@ export function Dashboard({ customers, insights, onReset }: DashboardProps) {
           </div>
         </motion.div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatsCard
-            title="Total Customers"
-            value={insights.totalCustomers}
-            subtitle="Analyzed in dataset"
-            icon={Users}
-            delay={0}
-          />
-          <StatsCard
-            title="High Risk"
-            value={insights.highRiskCount}
-            subtitle={`${((insights.highRiskCount / insights.totalCustomers) * 100).toFixed(1)}% of total`}
-            icon={AlertTriangle}
-            variant="danger"
-            delay={0.1}
-          />
-          <StatsCard
-            title="Avg Churn Risk"
-            value={`${(insights.avgChurnProbability * 100).toFixed(1)}%`}
-            subtitle="Across all customers"
-            icon={TrendingDown}
-            variant="warning"
-            delay={0.2}
-          />
-          <StatsCard
-            title="Revenue at Risk"
-            value={`$${(insights.revenueAtRisk / 1000).toFixed(1)}K`}
-            subtitle="Annual from high-risk"
-            icon={DollarSign}
-            variant="danger"
-            delay={0.3}
-          />
-        </div>
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid grid-cols-2 max-w-md">
+            <TabsTrigger value="overview" className="gap-2">
+              <LayoutDashboard className="w-4 h-4" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="survival" className="gap-2">
+              <Activity className="w-4 h-4" />
+              Survival Analysis
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Charts Row */}
-        <div className="grid lg:grid-cols-2 gap-6">
-          <RiskDistributionChart insights={insights} />
-          <FeatureImportanceChart insights={insights} />
-        </div>
-
-        {/* Global Insights */}
-        <GlobalInsights customers={customers} insights={insights} />
-
-        {/* Customer Table */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-foreground">Customer Predictions</h2>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <CheckCircle className="w-4 h-4 text-green-500" />
-              <span>Click any row for detailed analysis</span>
+          <TabsContent value="overview" className="space-y-8 mt-6">
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatsCard
+                title="Total Customers"
+                value={insights.totalCustomers}
+                subtitle="Analyzed in dataset"
+                icon={Users}
+                delay={0}
+              />
+              <StatsCard
+                title="High Risk"
+                value={insights.highRiskCount}
+                subtitle={`${((insights.highRiskCount / insights.totalCustomers) * 100).toFixed(1)}% of total`}
+                icon={AlertTriangle}
+                variant="danger"
+                delay={0.1}
+              />
+              <StatsCard
+                title="Avg Churn Risk"
+                value={`${(insights.avgChurnProbability * 100).toFixed(1)}%`}
+                subtitle="Across all customers"
+                icon={TrendingDown}
+                variant="warning"
+                delay={0.2}
+              />
+              <StatsCard
+                title="Revenue at Risk"
+                value={`$${(insights.revenueAtRisk / 1000).toFixed(1)}K`}
+                subtitle="Annual from high-risk"
+                icon={DollarSign}
+                variant="danger"
+                delay={0.3}
+              />
             </div>
-          </div>
-          <CustomerTable 
-            customers={customers}
-            onCustomerClick={setSelectedCustomer}
-          />
-        </div>
+
+            <div className="grid lg:grid-cols-2 gap-6">
+              <RiskDistributionChart insights={insights} />
+              <FeatureImportanceChart insights={insights} />
+            </div>
+
+            <GlobalInsights customers={customers} insights={insights} />
+
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-foreground">Customer Predictions</h2>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>Click any row for detailed analysis</span>
+                </div>
+              </div>
+              <CustomerTable
+                customers={customers}
+                onCustomerClick={setSelectedCustomer}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="survival" className="mt-6">
+            <SurvivalAnalysis customers={customers} insights={insights} />
+          </TabsContent>
+        </Tabs>
 
         {/* Customer Detail Modal */}
         {selectedCustomer && (
