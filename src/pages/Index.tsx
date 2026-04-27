@@ -15,29 +15,48 @@ import { FinalCTA } from '@/components/landing/FinalCTA';
 import { FileUpload } from '@/components/FileUpload';
 import { Dashboard } from '@/components/Dashboard';
 import { Customer, ChurnInsights } from '@/types/customer';
-import { generateMockCustomers, calculateInsights, parseCSV } from '@/utils/mockPredictions';
+import { parseCSVRaw, buildSampleRawCustomers, predictChurn } from '@/utils/churnApi';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
   const [customers, setCustomers] = useState<Customer[] | null>(null);
   const [insights, setInsights] = useState<ChurnInsights | null>(null);
   const [showUpload, setShowUpload] = useState(false);
+  const [predicting, setPredicting] = useState(false);
   const uploadRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
+
+  const runPrediction = async (raw: ReturnType<typeof parseCSVRaw>) => {
+    if (raw.length === 0) {
+      toast({ title: "No customers found", description: "Could not parse any rows.", variant: "destructive" });
+      return;
+    }
+    setPredicting(true);
+    try {
+      const { customers: predicted, insights: calc } = await predictChurn(raw);
+      setCustomers(predicted);
+      setInsights(calc);
+      toast({ title: "ML model ran successfully", description: `Scored ${predicted.length} customers.` });
+    } catch (e) {
+      toast({
+        title: "Prediction failed",
+        description: e instanceof Error ? e.message : "Unknown error",
+        variant: "destructive",
+      });
+    } finally {
+      setPredicting(false);
+    }
+  };
 
   const handleFileUpload = (content: string) => {
-    const parsedCustomers = parseCSV(content);
-    const calculatedInsights = calculateInsights(parsedCustomers);
-    setCustomers(parsedCustomers);
-    setInsights(calculatedInsights);
+    runPrediction(parseCSVRaw(content));
   };
 
   const handleUseSampleData = () => {
-    const mockCustomers = generateMockCustomers(100);
-    const calculatedInsights = calculateInsights(mockCustomers);
-    setCustomers(mockCustomers);
-    setInsights(calculatedInsights);
+    runPrediction(buildSampleRawCustomers(100));
   };
 
   const handleReset = () => {
@@ -77,6 +96,15 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {predicting && (
+        <div className="fixed inset-0 z-[60] bg-background/70 backdrop-blur-sm flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-card border border-border shadow-2xl">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <p className="text-sm text-foreground font-medium">Running ML churn model…</p>
+            <p className="text-xs text-muted-foreground">Preprocessing, scoring & generating SHAP values</p>
+          </div>
+        </div>
+      )}
       {/* Header with Sign Out */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
