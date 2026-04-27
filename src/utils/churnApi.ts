@@ -88,7 +88,16 @@ export async function predictChurn(rawCustomers: RawCustomerInput[]): Promise<Pr
   if (!data?.customers) throw new Error("Invalid prediction response");
   const customers = data.customers as Customer[];
   const insights = calculateInsights(customers);
-  return { customers, insights, meta: data.meta ?? {} };
+  const meta = (data.meta ?? {}) as Record<string, unknown>;
+  // Enrich insights with survival metadata from the edge function
+  if (Array.isArray(meta.kaplanMeier)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    insights.kaplanMeier = meta.kaplanMeier as any;
+  }
+  if (typeof meta.medianSurvivalMonths === "number") {
+    insights.medianSurvivalMonths = meta.medianSurvivalMonths;
+  }
+  return { customers, insights, meta };
 }
 
 /** Call the AI explanation edge function. */
