@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Users, AlertTriangle, TrendingDown, DollarSign, ArrowLeft, Brain, Download, Bell, CheckCircle, Activity, LayoutDashboard } from 'lucide-react';
+import { Users, AlertTriangle, TrendingDown, DollarSign, ArrowLeft, Brain, Download, Bell, CheckCircle, Activity, LayoutDashboard, Sparkles } from 'lucide-react';
 import { Customer, ChurnInsights } from '@/types/customer';
 import { StatsCard } from './StatsCard';
 import { CustomerTable } from './CustomerTable';
@@ -9,6 +9,7 @@ import { RiskDistributionChart } from './RiskDistributionChart';
 import { FeatureImportanceChart } from './FeatureImportanceChart';
 import { GlobalInsights } from './GlobalInsights';
 import { SurvivalAnalysis } from './SurvivalAnalysis';
+import { SegmentIntelligence } from './SegmentIntelligence';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -103,7 +104,7 @@ export function Dashboard({ customers, insights, onReset }: DashboardProps) {
         </motion.div>
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid grid-cols-2 max-w-md">
+          <TabsList className="grid grid-cols-3 max-w-2xl">
             <TabsTrigger value="overview" className="gap-2">
               <LayoutDashboard className="w-4 h-4" />
               Overview
@@ -111,6 +112,10 @@ export function Dashboard({ customers, insights, onReset }: DashboardProps) {
             <TabsTrigger value="survival" className="gap-2">
               <Activity className="w-4 h-4" />
               Survival Analysis
+            </TabsTrigger>
+            <TabsTrigger value="segments" className="gap-2">
+              <Sparkles className="w-4 h-4" />
+              Segment Intelligence
             </TabsTrigger>
           </TabsList>
 
@@ -174,6 +179,10 @@ export function Dashboard({ customers, insights, onReset }: DashboardProps) {
 
           <TabsContent value="survival" className="mt-6">
             <SurvivalAnalysis customers={customers} insights={insights} />
+          </TabsContent>
+
+          <TabsContent value="segments" className="mt-6">
+            <SegmentIntelligence customers={customers} />
           </TabsContent>
         </Tabs>
 
