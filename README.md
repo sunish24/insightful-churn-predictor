@@ -1,73 +1,131 @@
-# Welcome to your Lovable project
+# Insightful Churn Predictor
 
-## Project info
+Build an AI system that:
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+1️⃣ Takes customer data
+2️⃣ Predicts who is likely to churn
+3️⃣ Explains WHY the model thinks so
+4️⃣ Shows results in a dashboard
 
-## How can I edit this code?
+This is real business AI, not just theory.
 
-There are several ways of editing your application.
+📊 What Data Looks Like
 
-**Use Lovable**
+Each row = 1 customer
+Each column = customer info
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+Feature	Meaning
+Tenure	How long customer stayed
+MonthlyCharges	How much they pay
+ContractType	Monthly / Yearly
+InternetService	Fiber / DSL / None
+PaymentMethod	Card / Bank / Cash
+SupportCalls	How many complaints
+Churn	YES or NO (target)
 
-Changes made via Lovable will be committed automatically to this repo.
+Your model learns patterns like:
 
-**Use your preferred IDE**
+Short tenure + many complaints → high churn risk
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Long contract + low complaints → low risk
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+🤖 ML Part (Backend)
 
-Follow these steps:
+You train a model like:
+
+XGBoost (very powerful for tabular data)
+
+Or Random Forest / LightGBM
+
+Model output:
+
+Customer A → 82% chance of churn
+Customer B → 12% chance of churn
+
+🧠 The COOL Part — Explainability (SHAP)
+
+Companies don’t trust “black box” AI.
+They want to know:
+
+❓ “WHY did you say this customer will leave?”
+
+SHAP gives answers like:
+
+Customer A churn risk is high because:
+
+❌ Very short tenure
+
+❌ High monthly charges
+
+❌ Many support complaints
+
+This is 🔥 in interviews because it shows you understand Responsible AI
+
+🖥️ What Your Web App (Lovable) Will Show
+📂 Upload Section
+
+User uploads CSV of customers
+
+📈 Prediction Dashboard
+
+Table like:
+
+Customer	Churn Risk	Risk Level
+C001	82%	🔴 High
+C002	35%	🟡 Medium
+C003	10%	🟢 Low
+🔍 Customer Detail View
+
+Click a customer → see SHAP explanation chart
+
+“Top reasons this customer may leave”
+
+📊 Business Insights Panel
+
+% of customers at high risk
+
+Revenue at risk
+
+Most important churn factors overall
+
+🧩 How Lovable Fits In
+
+✔ Upload file interface
+✔ Dashboard UI
+✔ Charts & tables
+✔ Customer detail pages
+
+Backend (Python / FastAPI):
+✔ Model training
+✔ Predictions
+✔ SHAP explanations    in summary, it is a Customer Churn Predictor
+Build an end-to-end ML system that predicts customer churn with explainable results. Deploy as an interactive dashboard where managers can assess individual customer risk.
+
+Telco Churn (Kaggle)
+XGBoost
+SHAP
+Streamlit
+Deliverables
+Kaggle notebook with EDA and model comparison
+Streamlit app deployed on HF Spaces
+
+This project was built with [Lovable](https://lovable.dev).
+
+## Build with Lovable
+
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/6c5d7c4c-c311-4ebe-82e7-c0a98d9fc6fa).
+
+- **Ship faster**: describe what you want to build and Lovable handles the code.
+- **Stay in sync**: every change made in Lovable is committed straight to this repository.
+- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+
+## Development
+
+Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
+git clone <this-repository-url>
+cd <repository-name>
 npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
 ```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
